@@ -1,9 +1,11 @@
-from pathlib import Path
-from decouple import config
+import os
 from datetime import timedelta
+from pathlib import Path
+
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+HOST = os.environ.get("HOST", default="http://localhost:8000/")
 
 SECRET_KEY = config('SECRET_KEY')
 
@@ -27,6 +29,8 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
+
+    'apps.user',
 ]
 
 MIDDLEWARE = [
