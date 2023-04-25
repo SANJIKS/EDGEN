@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import CustomUserViewSet
@@ -6,4 +6,7 @@ from .views import CustomUserViewSet
 router = DefaultRouter()
 router.register('user', CustomUserViewSet, 'user')
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include('djoser.urls.jwt')),
+    path('', include(router.urls)),
+]
