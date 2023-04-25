@@ -25,6 +25,7 @@ urlpatterns = [
          cache_timeout=0), name='schema-swagger-ui'),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
+    path('', include('apps.articles.urls'))
 ]
 
 if settings.DEBUG:
