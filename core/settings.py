@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
@@ -27,6 +28,8 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
+
+    'apps.articles',
 ]
 
 MIDDLEWARE = [
