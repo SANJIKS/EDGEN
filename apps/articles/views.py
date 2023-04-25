@@ -71,6 +71,11 @@ class ArticleViewSet(ModelViewSet):
             Like.objects.create(user=request.user, article=article)
             liked = True
             article.rating += 1
+            dislike = DisLike.objects.filter(user=request.user, article=article)
+            if dislike.exists():
+                dislike.delete()
+                article.rating += 1
+
         likes_count = Like.objects.filter(article=article).count()
         response_data = {'liked': liked, 'likes_count': likes_count}
         return Response(response_data)
@@ -87,6 +92,10 @@ class ArticleViewSet(ModelViewSet):
             DisLike.objects.create(user=request.user, article=article)
             disliked = True
             article.rating -= 1
+            like = Like.objects.filter(user=request.user, article=article)
+            if like.exists():
+                like.delete()
+                article.rating -= 1
         return Response({'DisLiked': disliked})
     
     

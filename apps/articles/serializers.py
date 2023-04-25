@@ -22,12 +22,18 @@ class DisLikeSerializer(serializers.ModelSerializer):
 
 
 class ArticleListSerializer(serializers.ListSerializer):
+    def get_image_url(self, image):
+        request = self.context['request']
+        a = request.build_absolute_uri(image.url)
+        print(a)
+        return a
+
     def to_representation(self, data):
         iterable = data.all() if isinstance(data, models.Manager) else data
         return [{
             'title': item.title,
             'user': item.user.username,
-            'image': item.image
+            'image_url': self.get_image_url(item.image)
         } for item in iterable]
 
 
@@ -41,7 +47,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'user', 'rating']
         list_serializer_class = ArticleListSerializer
 
-    
     def get_likes_count(self, instance) -> int:
         return Like.objects.filter(article=instance).count()
 
