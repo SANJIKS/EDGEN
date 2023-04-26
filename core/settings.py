@@ -2,7 +2,6 @@ from pathlib import Path
 from decouple import config
 from datetime import timedelta
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
@@ -27,9 +26,11 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
-
+    #My apps
+    'univer.uni_users',
     'apps.articles',
     'apps.user',
+
 ]
 
 MIDDLEWARE = [
