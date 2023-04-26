@@ -3,10 +3,13 @@ from django.contrib.auth.tokens import default_token_generator
 from djoser import signals, utils
 from djoser.conf import settings as djoser_settings
 from djoser.views import UserViewSet
-from rest_framework import status
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .models import Profile
+from .permissions import IsAuthorOrReadOnly
+from .serializers import ProfileSerializer
 from .tasks import send_registration, send_reset_password, send_reset_username
 
 User = get_user_model()
@@ -84,3 +87,20 @@ class CustomUserViewSet(UserViewSet):
             send_reset_username.delay(user.pk, context)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProfileViewSet(mixins.RetrieveModelMixin,
+                     mixins.UpdateModelMixin,
+                     viewsets.GenericViewSet):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthorOrReadOnly]
+    queryset = Profile.objects.all()
+
+    def get_object(self):
+        user_id = self.kwargs['id']
+        print(user_id)
+        user = User.objects.get(pk=user_id)
+        try:
+            return user.profile
+        except Profile.DoesNotExist:
+            return Profile.objects.create(user=user)
