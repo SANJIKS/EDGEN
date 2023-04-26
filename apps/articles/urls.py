@@ -7,6 +7,6 @@ router.register('article', ArticleViewSet, 'articles')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('favorites/', FavoriteListAPIView.as_view(), name='favorites'),
-    path('recommendations/', RecommendationsListAPIView.as_view(), name='top-articles')
+    path('auth/favorites/', FavoriteListAPIView.as_view(), name='favorites'),
+    path('auth/recommendations/', RecommendationsListAPIView.as_view(), name='top-articles')
 ]
