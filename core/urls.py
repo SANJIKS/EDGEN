@@ -26,7 +26,7 @@ urlpatterns = [
 
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
-    path('register/',include('univer.uni_users.urls'))
+    path('register/',include('univer.uni_users.urls')),
 
     path('auth/', include('apps.user.urls')),
     path('', include('apps.articles.urls'))
