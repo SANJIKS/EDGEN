@@ -10,7 +10,8 @@ urlpatterns = [
     path('', include('djoser.urls.jwt')),
     path('', include(router.urls)),
     path('user/<int:id>/profile/', ProfileViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'patch': 'partial_update'})),
+        'get': 'retrieve',})),
+    path('user/me/profile/', ProfileViewSet.as_view({
+        'put': 'me',
+        'patch': 'me',})),
 ]

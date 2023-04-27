@@ -99,10 +99,23 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
     parser_classes = [MultiPartParser]
 
     def get_object(self):
-        user_id = self.kwargs['id']
-        user = User.objects.get(pk=user_id)
+
+        if self.action == 'me':
+            user = self.request.user
+        else:
+            user_id = self.kwargs['id']
+            user = User.objects.get(pk=user_id)
+        
         self.check_object_permissions(self.request, user)
+
         try:
             return user.profile
         except Profile.DoesNotExist:
             return Profile.objects.create(user=user)
+
+    @action(["get", "put", "patch", "delete"], detail=False)
+    def me(self, request, *args, **kwargs):
+        if request.method == "PUT":
+            return self.update(request, *args, **kwargs)
+        elif request.method == "PATCH":
+            return self.partial_update(request, *args, **kwargs)
