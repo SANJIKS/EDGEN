@@ -26,8 +26,8 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
+
     #My apps
-    'univer.uni_users',
     'apps.articles',
     'apps.user',
 
