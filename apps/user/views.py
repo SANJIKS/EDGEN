@@ -3,8 +3,9 @@ from django.contrib.auth.tokens import default_token_generator
 from djoser import signals, utils
 from djoser.conf import settings as djoser_settings
 from djoser.views import UserViewSet
-from rest_framework import generics, mixins, status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from .models import Profile
@@ -95,11 +96,12 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthorOrReadOnly]
     queryset = Profile.objects.all()
+    parser_classes = [MultiPartParser]
 
     def get_object(self):
         user_id = self.kwargs['id']
-        print(user_id)
         user = User.objects.get(pk=user_id)
+        self.check_object_permissions(self.request, user)
         try:
             return user.profile
         except Profile.DoesNotExist:

@@ -1,13 +1,16 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import CustomUserViewSet, ProfileViewSet
 
 router = DefaultRouter()
 router.register('user', CustomUserViewSet, 'user')
-router.register('user/<id>/profile', ProfileViewSet, 'profile')
 
 urlpatterns = [
     path('', include('djoser.urls.jwt')),
     path('', include(router.urls)),
+    path('user/<int:id>/profile/', ProfileViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'patch': 'partial_update'})),
 ]
