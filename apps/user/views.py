@@ -105,13 +105,10 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
         else:
             user_id = self.kwargs['id']
             user = User.objects.get(pk=user_id)
-        
         self.check_object_permissions(self.request, user)
 
-        try:
-            return user.profile
-        except Profile.DoesNotExist:
-            return Profile.objects.create(user=user)
+        return user.profile
+
 
     @action(["get", "put", "patch", "delete"], detail=False)
     def me(self, request, *args, **kwargs):
