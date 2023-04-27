@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     #My apps
     'apps.articles',
     'apps.user',
+    'apps.uni_apps.university',
 
 ]
 

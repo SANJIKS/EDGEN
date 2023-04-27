@@ -24,8 +24,8 @@ urlpatterns = [
     path('', schema_view.with_ui('swagger',
          cache_timeout=0), name='schema-swagger-ui'),
     path('auth/', include('apps.user.urls')),
-    path('', include('apps.articles.urls'))
-
+    path('', include('apps.articles.urls')),
+    path('', include('apps.uni_apps.university.urls'))
 ]
 
 if settings.DEBUG:

@@ -109,7 +109,6 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
 
         return user.profile
 
-
     @action(["get", "put", "patch", "delete"], detail=False)
     def me(self, request, *args, **kwargs):
         if request.method == "PUT":
