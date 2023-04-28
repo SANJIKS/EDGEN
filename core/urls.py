@@ -23,14 +23,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', schema_view.with_ui('swagger',
          cache_timeout=0), name='schema-swagger-ui'),
-
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
-    path('register/',include('univer.uni_users.urls')),
-
     path('auth/', include('apps.user.urls')),
-    path('', include('apps.articles.urls'))
-
+    path('', include('apps.articles.urls')),
+    path('', include('apps.uni_apps.university.urls'))
 ]
 
 if settings.DEBUG:

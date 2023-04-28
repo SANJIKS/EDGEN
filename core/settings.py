@@ -26,10 +26,11 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
+
     #My apps
-    'univer.uni_users',
     'apps.articles',
     'apps.user',
+    'apps.uni_apps.university',
 
 ]
 
@@ -154,7 +155,11 @@ DJOSER = {
     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '#/activate/?uid={uid}&token={token}',
     'SEND_ACTIVATION_EMAIL': True,
-    'SERIALIZERS': {},
+    'SERIALIZERS': {
+        'user': 'apps.user.serializers.CustomUserSerializer',
+        'current_user': 'apps.user.serializers.CustomUserSerializer',
+        'user_create': 'apps.user.serializers.CustomUserCreateSerializer',
+    },
 }
 
 
