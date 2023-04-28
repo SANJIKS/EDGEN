@@ -17,13 +17,22 @@ class UniversityViewSet(viewsets.ModelViewSet):
         return [IsOwner()]
 
     def get_serializer_class(self, *args, **kwargs):
-        if self.action == 'add_owner':
+        if self.action in ('add_owner', 'remove_owner'):
             return AddOwnerSerializer
         return UniversitySerializer
 
     @action(['POST'], detail=True)
     def add_owner(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'university': self.get_object()})
+        serializer = self.get_serializer(data=request.data, context={
+                                         'university': self.get_object()})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(['PUT'], detail=True)
+    def remove_owner(self, request, *args, **kwargs):
+        university = self.get_object()
+        owner_pk = request.data.get('owner_pk')
+        owner = self.get_object().owners.get(pk=owner_pk)
+        university.owners.remove(owner)
+        return Response(status=status.HTTP_204_NO_CONTENT)

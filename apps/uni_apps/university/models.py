@@ -3,7 +3,7 @@ from django.db import models
 
 class University(models.Model):
     owners = models.ManyToManyField('auth.User', related_name='universities')
-    students = models.ManyToManyField('auth.User', related_name='courses')
+    students = models.ManyToManyField('auth.User', related_name='courses', blank=True)
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     email = models.EmailField()

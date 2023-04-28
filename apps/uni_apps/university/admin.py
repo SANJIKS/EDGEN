@@ -26,7 +26,7 @@ class UniverRegistrationAdmin(admin.ModelAdmin):
 
         send_registration_request.delay(
             recipient_list=recipient_list,
-            approved=True
+            approved=False
         )
 
     approve.short_description = 'Одобрить'
