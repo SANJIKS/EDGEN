@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.db.models import Avg
 from django.db import models
 
-from .models import Article, Comment, Favorite, Like, DisLike
+from .models import Article, Comment, Favorite, Like, DisLike, Tags
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -61,7 +61,19 @@ class ArticleSerializer(serializers.ModelSerializer):
         representation['liked_users'] = LikeSerializer(instance.likes.all(), many=True).data
         representation['comments'] = CommentSerializer(instance.comments.all(), many=True).data
         return representation
+
+
+class TagsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tags
+        fields = '__all__'
+
     
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['посты'] =  [{'title': article.title, 'slug': article.slug} for article in instance.articles.all()]
+        return representation
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')

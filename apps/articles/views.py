@@ -4,11 +4,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics
+from rest_framework import filters, generics, mixins, permissions, viewsets
 
 
-from .models import Article, Comment, Like, DisLike, Favorite
-from .serializers import ArticleSerializer, FavoriteSerializer, LikeSerializer, DisLikeSerializer, CommentSerializer
+
+from .models import Article, Comment, Like, DisLike, Favorite, Tags
+from .serializers import ArticleSerializer, FavoriteSerializer, LikeSerializer, DisLikeSerializer, CommentSerializer, TagsSerializer
 from .permissions import IsAuthor
 
 
@@ -127,6 +128,19 @@ class RecommendationsListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Article.objects.order_by('-rating')[:10]
+
+class TagsCreateReadDeleteView(mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = Tags.objects.all()
+    serializer_class = TagsSerializer
+
+    def get_permissions(self):
+        method = self.request.method
+        if method in permissions.SAFE_METHODS:
+            self.permission_classes = [permissions.AllowAny]
+        elif method in ['POST', 'DELETE']:
+            self.permission_classes = [permissions.IsAdminUser]
+        return super().get_permissions()
+    
 
 
 # class CommentViewSet(ModelViewSet):
