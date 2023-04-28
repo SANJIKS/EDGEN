@@ -44,7 +44,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         exclude = ['rating']
-        read_only_fields = ['id', 'user', 'rating']
+        read_only_fields = ['user', 'rating', 'slug']
         list_serializer_class = ArticleListSerializer
 
     def get_likes_count(self, instance) -> int:
@@ -67,6 +67,7 @@ class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tags
         fields = '__all__'
+        read_only_fields = ['slug']
 
     
     def to_representation(self, instance):
