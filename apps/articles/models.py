@@ -47,7 +47,7 @@ class Article(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title) + datetime.now().strftime('_%d_%M_%H')
-        return super().save(*args, *kwargs)
+        return super().save(*args, **kwargs)
 
 
 
