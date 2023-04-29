@@ -9,7 +9,7 @@ from .serializers import (OwnerSerializer, StudentsSerializer,
 
 
 class UniversityViewSet(viewsets.ModelViewSet):
-    queryset = University.objects.all()
+    queryset = University.objects.filter(approved=True)
 
     def get_permissions(self):
         if self.request.method in ['GET', 'POST'] and \
@@ -28,7 +28,8 @@ class UniversityViewSet(viewsets.ModelViewSet):
     def owner(self, request, *args, **kwargs):
         if request.method == 'POST':
             serializer = self.get_serializer(data=request.data, context={
-                                             'university': self.get_object()})
+                                             'university': self.get_object(),
+                                             'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -44,7 +45,8 @@ class UniversityViewSet(viewsets.ModelViewSet):
     def students(self, request, *args, **kwargs):
         if request.method == 'POST':
             serializer = self.get_serializer(data=request.data, context={
-                'university': self.get_object()})
+                                             'university': self.get_object(),
+                                             'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
