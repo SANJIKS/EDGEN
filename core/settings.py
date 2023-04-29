@@ -211,9 +211,9 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'file': {
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'file.log'),
+            'filename': 'logs/file.log',
             'formatter': 'verbose'
         },
     },
