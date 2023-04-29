@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import models
 from rest_framework import serializers
 
 from apps.user.serializers import CustomUserSerializer
@@ -10,10 +11,23 @@ from .tasks import (send_owner_add, send_owner_delete, send_student_inroll,
 User = get_user_model()
 
 
+class UniversityListSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        iterable = data.all() if isinstance(data, models.Manager) else data
+
+        return [{
+            'id': item.id,
+            'name': item.name,
+            'address': item.address,
+            'avatar': item.avatar.url if item.avatar else None
+        } for item in iterable]
+
+
 class UniversitySerializer(serializers.ModelSerializer):
     class Meta:
         model = University
         exclude = ('owners', 'approved', 'students')
+        list_serializer_class = UniversityListSerializer
 
     def create(self, validated_data):
         validated_data['owners'] = [self.context['request'].user]
@@ -32,14 +46,24 @@ class OwnerSerializer(serializers.Serializer):
     owner = serializers.IntegerField()
 
     def validate_owner(self, owner):
-        if not owner.is_active:
-            raise serializers.ValidationError('User must be active')
+        request = self.context['request']
+
+        if request.method == 'POST':
+            if self.context['university'].owners.filter(pk=owner).exists():
+                raise serializers.ValidationError('User already owner')
+
+        elif request.method == 'PUT':
+            if not self.instance.owners.filter(pk=owner).exists():
+                raise serializers.ValidationError('User not owner')
+
+        if not User.objects.filter(pk=owner).exists():
+            raise serializers.ValidationError('User not found')
+
         return owner
 
     def create(self, validated_data):
         university = self.context['university']
         owner = User.objects.get(pk=validated_data['owner'])
-
         university.owners.add(owner)
         university.save()
         send_owner_add.delay(owner.email, university.name)
@@ -47,10 +71,7 @@ class OwnerSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         owner_pk = validated_data.get('owner')
-        try:
-            owner = instance.owners.get(pk=owner_pk)
-        except instance.owners.model.DoesNotExist:
-            raise serializers.ValidationError({'owner': 'Owner not found'})
+        owner = instance.owners.get(pk=owner_pk)
         instance.owners.remove(owner)
         instance.save()
         send_owner_delete.delay(owner.email, instance.name)
@@ -68,14 +89,30 @@ class StudentsSerializer(serializers.ModelSerializer):
         model = University
         fields = ('students',)
 
+    def validate_students(self, students):
+        request = self.context['request']
+
+        if request.method == 'POST':
+            for student in students:
+                if self.context['university'].students.filter(pk=student.pk).exists():
+                    raise serializers.ValidationError('User already student')
+
+        elif request.method == 'PUT':
+            for student in students:
+                if not self.instance.students.filter(pk=student.pk).exists():
+                    raise serializers.ValidationError('User not student')
+
+        for student in students:
+            if not User.objects.filter(pk=student.pk).exists():
+                raise serializers.ValidationError('User not found')
+
+        return students
+
     def create(self, validated_data):
         university = self.context['university']
         recipient_list = []
         for student in validated_data['students']:
-            try:
-                user = User.objects.get(pk=student.id)
-            except User.DoesNotExist:
-                raise serializers.ValidationError({'students': 'User not found'})
+            user = User.objects.get(pk=student.id)
             university.students.add(user)
             recipient_list.append(user.email)
         university.save()
@@ -85,18 +122,16 @@ class StudentsSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         recipient_list = []
         for student in validated_data['students']:
-            try:
-                user = User.objects.get(pk=student.id)
-            except User.DoesNotExist:
-                raise serializers.ValidationError({'students': 'User not found'})
+            user = User.objects.get(pk=student.id)
             instance.students.remove(user)
             recipient_list.append(user.email)
         instance.save()
         send_student_outroll.delay(recipient_list, instance.name)
         return instance
-    
+
     def to_representation(self, instance):
-        students = [CustomUserSerializer(student).data for student in instance.students.all()]
+        students = [CustomUserSerializer(
+            student).data for student in instance.students.all()]
         repr_ = {
             'students': students
         }
