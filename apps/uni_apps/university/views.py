@@ -13,32 +13,32 @@ class UniversityViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.request.method in ['GET', 'POST'] and \
-           not self.action in ('add_owner', 'remove_owner', 'students'):
+           not self.action in ('owner', 'students'):
             return [permissions.IsAuthenticatedOrReadOnly()]
         return [IsOwner()]
 
     def get_serializer_class(self, *args, **kwargs):
-        if self.action in ('add_owner', 'remove_owner'):
+        if self.action in ('owner'):
             return OwnerSerializer
         if self.action == 'students':
             return StudentsSerializer
         return UniversitySerializer
 
-    @action(['POST'], detail=True)
-    def add_owner(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={
-                                         'university': self.get_object()})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @action(['PUT'], detail=True)
-    def remove_owner(self, request, *args, **kwargs):
-        university = self.get_object()
-        serializer = self.get_serializer(university, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(['POST', 'PUT'], detail=True)
+    def owner(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            serializer = self.get_serializer(data=request.data, context={
+                                             'university': self.get_object()})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        elif request.method == 'PUT':
+            university = self.get_object()
+            serializer = self.get_serializer(university, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(['PUT', 'POST'], detail=True)
     def students(self, request, *args, **kwargs):
@@ -48,7 +48,7 @@ class UniversityViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'PUT':
+        elif request.method == 'PUT':
             university = self.get_object()
             serializer = self.get_serializer(university, data=request.data)
             serializer.is_valid(raise_exception=True)
