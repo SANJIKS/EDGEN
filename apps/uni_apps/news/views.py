@@ -18,14 +18,17 @@ class NewsViewSet(ModelViewSet):
     search_fields = ['title', 'description']
 
     def get_permissions(self):
-        if self.request.method == ['POST','PUT', 'PATCH', 'DELETE']:
+        if self.request.method == ['POST', 'PUT', 'PATCH', 'DELETE']:
             self.permission_classes = [IsOwner]
         return super().get_permissions()
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        if getattr(self, 'swagger_fake_view', False):
+            return {'request': self.request}
+
         try:
-            university = University.objects.get(pk=self.kwargs['uni_id'])
+            university = University.objects.get(pk=self.kwargs.get('uni_id'))
         except University.DoesNotExist:
             raise Http404
 
@@ -34,21 +37,21 @@ class NewsViewSet(ModelViewSet):
             'university': university
         })
         return context
-    
+
     def get_queryset(self):
-        return News.objects.filter(university=self.kwargs['uni_id'])
+        return News.objects.filter(university=self.kwargs.get('uni_id'))
 
     def get_serializer_class(self):
         if self.action == 'comment':
             return NewsCommentSerializer
         return NewsSerializer
-    
 
     @action(methods=['POST', 'DELETE'], detail=True)
     def comment(self, request, pk=None):
         news = self.get_object()
         if request.method == 'POST':
-            serializer = NewsCommentSerializer(data=request.data, context={'request': request})
+            serializer = NewsCommentSerializer(
+                data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save(user=request.user, news=news)
             return Response(serializer.data)
@@ -58,12 +61,12 @@ class NewsViewSet(ModelViewSet):
                 return Response({'error': 'ты че дурашечка'}, status=403)
             comment.delete()
             return Response({'message': 'красавчик нефор'})
-                
 
     @action(methods=['POST'], detail=True, url_path='news')
     def rate_news(self, request, pk=None) -> Response:
         news = self.get_object()
-        serializer = RatingSerializer(data=request.data, context={'request': request, 'news': news})
+        serializer = RatingSerializer(data=request.data, context={
+                                      'request': request, 'news': news})
         serializer.is_valid(raise_exception=True)
         serializer.save(news=news)
         return Response(serializer.data)
