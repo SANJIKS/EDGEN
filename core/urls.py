@@ -21,13 +21,15 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     path('', schema_view.with_ui('swagger',
          cache_timeout=0), name='schema-swagger-ui'),
     path('auth/', include('apps.user.urls')),
     path('', include('apps.articles.urls')),
     path('', include('apps.uni_apps.university.urls')),
     path('', include('apps.uni_apps.news.urls')),
-    path('', include('apps.uni_apps.subject.urls'))
+    path('', include('apps.uni_apps.subject.urls')),
+
 ]
 
 if settings.DEBUG:
