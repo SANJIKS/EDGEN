@@ -25,7 +25,6 @@ class ArticleListSerializer(serializers.ListSerializer):
     def get_image_url(self, image):
         request = self.context['request']
         a = request.build_absolute_uri(image.url)
-        # print(a)
         return a
 
     def to_representation(self, data):

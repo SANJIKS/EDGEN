@@ -28,11 +28,12 @@ INSTALLED_APPS = [
     'djoser',
     'corsheaders',
 
-    #My apps
+    # My apps
     'apps.articles',
     'apps.user',
     'apps.uni_apps.university',
     'apps.uni_apps.news',
+    'apps.uni_apps.subject',
 
 ]
 
