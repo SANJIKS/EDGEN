@@ -25,7 +25,7 @@ class NewsViewSet(ModelViewSet):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if getattr(self, 'swagger_fake_view', False):
-            return {'request': self.request}
+            return context
 
         try:
             university = University.objects.get(pk=self.kwargs.get('uni_id'))
