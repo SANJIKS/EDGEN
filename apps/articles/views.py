@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, mixins, permissions, viewsets
+from rest_framework import filters, generics, mixins, permissions, viewsets, status
 
 
 
@@ -55,7 +55,7 @@ class ArticleViewSet(ModelViewSet):
         if request.method == 'DELETE':
             comment = get_object_or_404(Comment.objects.filter(id=pk))
             if request.user != comment.user:
-                return Response({'error': 'ты че дурашечка'}, status=403)
+                return Response({'error': 'ты че дурашечка'})
             comment.delete()
             return Response({'message': 'красавчик нефор'})
         
@@ -120,6 +120,8 @@ class FavoriteListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_anonymous:
+            return []
         return Favorite.objects.filter(user=user)
 
 

@@ -1,15 +1,14 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, mixins, permissions, viewsets
+from rest_framework import filters
 
 from .models import News, NewsRating, NewsComment
 from .serializers import NewsSerializer, NewsCommentSerializer, RatingSerializer
-from .permissions import IsAuthor, IsOwner
+from ..permissions import IsOwner
 from apps.uni_apps.university.models import University
 
 
@@ -18,8 +17,9 @@ class NewsViewSet(ModelViewSet):
     search_fields = ['title', 'description']
 
     def get_permissions(self):
-        if self.request.method == ['POST', 'PUT', 'PATCH', 'DELETE']:
+        if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
             self.permission_classes = [IsOwner]
+            print(self.permission_classes)
         return super().get_permissions()
 
     def get_serializer_context(self):

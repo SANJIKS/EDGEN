@@ -27,6 +27,7 @@ urlpatterns = [
     path('', include('apps.articles.urls')),
     path('', include('apps.uni_apps.university.urls')),
     path('', include('apps.uni_apps.news.urls')),
+    path('', include('apps.uni_apps.subject.urls'))
 ]
 
 if settings.DEBUG:

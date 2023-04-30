@@ -19,7 +19,7 @@ class UniversityListSerializer(serializers.ListSerializer):
             'id': item.id,
             'name': item.name,
             'address': item.address,
-            'avatar': item.avatar.url if item.avatar else None
+            'avatar': item.avatar.url,
         } for item in iterable]
 
 
