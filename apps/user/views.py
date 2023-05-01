@@ -10,8 +10,13 @@ from rest_framework.response import Response
 
 from .models import Profile
 from .permissions import IsAuthorOrReadOnly
-from .serializers import ProfileSerializer
+from .serializers import ProfileSerializer, SubscriptionSerializer
 from .tasks import send_registration, send_reset_password, send_reset_username
+from rest_framework import generics, permissions, serializers
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+from .models import Subscription
+
 
 User = get_user_model()
 
@@ -115,3 +120,30 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
             return self.update(request, *args, **kwargs)
         elif request.method == "PATCH":
             return self.partial_update(request, *args, **kwargs)
+
+class SubscriptionCreateAPIView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SubscriptionSerializer
+
+    def perform_create(self, serializer):
+        subscribed_to = get_object_or_404(User, id=self.kwargs['user_id'])
+        if subscribed_to == self.request.user:
+            raise serializers.ValidationError("You cannot subscribe to yourself")
+        serializer.save(subscriber=self.request.user, subscribed_to=subscribed_to)
+
+
+class SubscriptionListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SubscriptionSerializer
+
+    def get_queryset(self):
+        return Subscription.objects.filter(subscriber=self.request.user)
+
+
+class SubscriptionDestroyAPIView(generics.DestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SubscriptionSerializer
+
+    def get_object(self):
+        subscribed_to = get_object_or_404(User, id=self.kwargs['user_id'])
+        return get_object_or_404(Subscription, subscriber=self.request.user, subscribed_to=subscribed_to)

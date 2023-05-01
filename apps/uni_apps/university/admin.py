@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import University
+from .models import University 
 from .tasks import send_registration_request
 
 

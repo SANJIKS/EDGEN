@@ -8,6 +8,8 @@ from .models import University
 from .tasks import (send_owner_add, send_owner_delete, send_student_inroll,
                     send_student_outroll)
 
+
+
 User = get_user_model()
 
 
