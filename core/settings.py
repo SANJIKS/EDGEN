@@ -2,6 +2,7 @@ from pathlib import Path
 from decouple import config
 from datetime import timedelta
 import os
+from allauth.account.signals import user_signed_up
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,6 +22,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.vk',
 
     'rest_framework',
     'drf_yasg',
@@ -62,9 +71,15 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
@@ -136,6 +151,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'allauth.account.auth_backends.AuthenticationBackend',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -175,6 +193,59 @@ EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
 EMAIL_PORT = config('EMAIL_PORT')
 EMAIL_USE_TLS = config('USE_TLS', cast=bool)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
+# Django-allauth
+
+SITE_ID = 1
+LOGIN_REDIRECT_URL = '/'
+
+
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            'client_id': '1097981109932-igbkvqui5rjna0c09cav12b1q4ce4obt.apps.googleusercontent.com',
+            'secret': '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',
+            'key': ''
+        }
+    },
+    'vk': {
+        'SCOPE': ['email'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'METHOD': 'oauth2',
+        'VERSION': '5.131',
+        'APP': {
+            'client_id': '51631240',
+            'secret': 'CWsqLhllibg5jenKe5Sn',
+            'key': ''
+        },
+        'FIELDS': [
+            'uid',
+            'first_name',
+            'last_name',
+            'nickname',
+            'email',
+            'photo_max_orig',
+            'timezone',
+            'screen_name'
+        ],
+        'EXCHANGE_TOKEN': True,
+        'LOCALE_FUNC': lambda request: 'ru',
+    },
+}
+
 
 
 # CORS headings
