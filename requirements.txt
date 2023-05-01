@@ -10,3 +10,5 @@ djoser
 djangorestframework_simplejwt
 django-cors-headers
 python-slugify
+django-allauth
+django-rest-auth
