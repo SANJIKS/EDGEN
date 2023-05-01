@@ -3,21 +3,29 @@ from django.db import models
 
 class Lecture(models.Model):
     subject = models.ForeignKey(
-        'subjects.Subject', on_delete=models.CASCADE, related_name='lectures')
-    name = models.CharField(max_length=255)
+        'subject.Subject', on_delete=models.CASCADE, related_name='lectures')
+    user = models.ForeignKey(
+        'auth.User', on_delete=models.CASCADE, related_name='lectures')
+    title = models.CharField(max_length=255)
     description = models.TextField()
-    files = models.ManyToManyField('LectureFile', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Лекция'
+        verbose_name_plural = 'Лекции'
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 class LectureFile(models.Model):
     lecture = models.ForeignKey(
         Lecture, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField()
+    file = models.FileField(upload_to='materials')
+
+    class Meta:
+        verbose_name = 'Файл лекции'
+        verbose_name_plural = 'Файлы лекции'
 
     def __str__(self):
-        return self.file.name
+        return f"{self.file.name} on {self.lecture.title}"

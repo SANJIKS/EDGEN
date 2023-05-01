@@ -2,7 +2,7 @@ from rest_framework import permissions, viewsets
 
 from apps.uni_apps.university.models import University
 
-from ..permissions import IsOwner
+from ..permissions import IsOwner, IsStudentOrOwner
 from .models import Subject
 from .serializers import SubjectSerializer
 
@@ -25,4 +25,4 @@ class SubjectViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
             return [IsOwner()]
-        return [permissions.AllowAny()]
+        return [IsStudentOrOwner()]
