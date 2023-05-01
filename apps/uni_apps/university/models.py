@@ -10,7 +10,7 @@ class University(models.Model):
     email = models.EmailField()
     approved = models.BooleanField(default=False)
     description = models.TextField()
-    avatar = models.ImageField(upload_to='universities', default='default.png')
+    avatar = models.ImageField(upload_to='universities', default='universities/default.jpg')
     registration_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
