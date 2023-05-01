@@ -28,8 +28,8 @@ class Subject(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Материал'
-        verbose_name_plural = 'Материалы'
+        verbose_name = 'Предмет'
+        verbose_name_plural = 'Предметы'
         ordering = ['-created_at']
 
     def __str__(self) -> str:

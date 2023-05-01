@@ -5,6 +5,6 @@ from .views import SubjectViewSet
 
 router = DefaultRouter()
 router.register(r'university/(?P<uni_id>\d+)/subject',
-                SubjectViewSet, 'university_subject')
+                SubjectViewSet, 'subject')
 
 urlpatterns = router.urls
