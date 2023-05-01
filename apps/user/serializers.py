@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from .models import Subscription
 
 
-
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
@@ -37,24 +36,32 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         Profile.objects.create(user=user)
         return user
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    subscribed_to = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
 
+class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
-        fields = ('id', 'subscriber', 'subscribed_to', 'created_at',)
-        read_only_fields = ('id', 'subscriber', 'created_at',)
+        fields = '__all__'
+        read_only_fields = ['subscriber', 'subscribed_to']
 
-    def create(self, validated_data):
-        subscribed_to = validated_data['subscribed_to']
-        subscriber = self.context['request'].user
-        if subscribed_to == subscriber:
-            raise serializers.ValidationError("You cannot subscribe to yourself")
-        subscription, created = Subscription.objects.get_or_create(subscriber=subscriber, subscribed_to=subscribed_to)
-        if not created:
-            raise serializers.ValidationError("You already subscribed to this user")
-        return subscription
+    def validate(self, attrs):
+        request = self.context['request']
+        attrs['subscriber'] = request.user
+        sub_to_id = self.context['subscribed_to']
 
-    def delete(self, instance):
-        instance.delete()
-        return instance
+        try:
+            attrs['subscribed_to'] = User.objects.get(id=sub_to_id)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                f"User with id {sub_to_id} does not exist")
+
+        if (request.method == 'POST' and
+                attrs['subscriber'] == attrs['subscribed_to']):
+            raise serializers.ValidationError(
+                "You cannot subscribe to yourself")
+        return attrs
+
+    def to_representation(self, instance):
+        repr_ = super().to_representation(instance)
+        repr_['subscriber'] = instance.subscriber.username  # TODO
+        repr_['subscribed_to'] = instance.subscribed_to.username
+        return repr_
