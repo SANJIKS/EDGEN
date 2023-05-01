@@ -10,7 +10,7 @@ class News(models.Model):
     slug = models.SlugField(primary_key=True, max_length=150, blank=True)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    image = models.ImageField(upload_to='news_images', null=True, blank=True)
+    image = models.ImageField(upload_to='news', default='news/default.jpg')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)    
     university = models.ForeignKey('university.University', on_delete=models.CASCADE, related_name='news')

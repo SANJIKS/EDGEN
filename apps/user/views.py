@@ -7,6 +7,8 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from django.dispatch import receiver
+from allauth.account.signals import user_signed_up
 
 from .models import Profile
 from .permissions import IsAuthorOrReadOnly
@@ -19,6 +21,15 @@ from .models import Subscription
 
 
 User = get_user_model()
+
+
+@receiver(user_signed_up)
+def create_profile_for_new_user(sender, request, user, **kwargs):
+    if user.socialaccount_set.filter(provider='google').exists() or user.socialaccount_set.filter(provider='vk').exists():
+        profile = Profile.objects.create(user=user)
+
+
+user_signed_up.connect(create_profile_for_new_user)
 
 
 class CustomUserViewSet(UserViewSet):

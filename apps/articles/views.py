@@ -4,7 +4,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, mixins, permissions, viewsets
+from rest_framework import filters, generics, mixins, permissions, viewsets, status
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 
 
@@ -43,6 +46,11 @@ class ArticleViewSet(ModelViewSet):
         elif self.action == 'favorite':
             return FavoriteSerializer
         return super().get_serializer_class()
+    
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(60*60))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @action(methods=['POST', 'DELETE'], detail=True)
     def comment(self, request, pk=None):
@@ -55,7 +63,7 @@ class ArticleViewSet(ModelViewSet):
         if request.method == 'DELETE':
             comment = get_object_or_404(Comment.objects.filter(id=pk))
             if request.user != comment.user:
-                return Response({'error': 'ты че дурашечка'}, status=403)
+                return Response({'error': 'ты че дурашечка'})
             comment.delete()
             return Response({'message': 'красавчик нефор'})
         
@@ -120,6 +128,8 @@ class FavoriteListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_anonymous:
+            return []
         return Favorite.objects.filter(user=user)
 
 
