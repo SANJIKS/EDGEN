@@ -20,7 +20,7 @@ User = get_user_model()
 
 @receiver(user_signed_up)
 def create_profile_for_new_user(sender, request, user, **kwargs):
-    if user.socialaccount_set.filter(provider='google').exists():
+    if user.socialaccount_set.filter(provider='google').exists() or user.socialaccount_set.filter(provider='vk').exists():
         profile = Profile.objects.create(user=user)
 
 user_signed_up.connect(create_profile_for_new_user)

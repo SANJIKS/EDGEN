@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
 
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.vk',
 
     'rest_framework',
     'drf_yasg',
@@ -218,7 +219,30 @@ SOCIALACCOUNT_PROVIDERS = {
             'secret': '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',
             'key': ''
         }
-    }
+    },
+    'vk': {
+        'SCOPE': ['email'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'METHOD': 'oauth2',
+        'VERSION': '5.131',
+        'APP': {
+            'client_id': '51631240',
+            'secret': 'CWsqLhllibg5jenKe5Sn',
+            'key': ''
+        },
+        'FIELDS': [
+            'uid',
+            'first_name',
+            'last_name',
+            'nickname',
+            'email',
+            'photo_max_orig',
+            'timezone',
+            'screen_name'
+        ],
+        'EXCHANGE_TOKEN': True,
+        'LOCALE_FUNC': lambda request: 'ru',
+    },
 }
 
 
