@@ -1,24 +1,21 @@
+from allauth.account.signals import user_signed_up
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.dispatch import receiver
+from django.shortcuts import get_object_or_404
 from djoser import signals, utils
 from djoser.conf import settings as djoser_settings
 from djoser.views import UserViewSet
-from rest_framework import mixins, status, viewsets
+from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from django.dispatch import receiver
-from allauth.account.signals import user_signed_up
 
-from .models import Profile
+from .models import Profile, Subscription
 from .permissions import IsAuthorOrReadOnly
 from .serializers import ProfileSerializer, SubscriptionSerializer
 from .tasks import send_registration, send_reset_password, send_reset_username
-from rest_framework import generics, permissions
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
-from .models import Subscription
-
 
 User = get_user_model()
 
@@ -163,4 +160,6 @@ class SubscriptionListView(generics.ListAPIView):
     serializer_class = SubscriptionSerializer
 
     def get_queryset(self):
+        if self.request.user.is_anonymous:
+            return Subscription.objects.none()
         return Subscription.objects.filter(subscriber=self.request.user)
