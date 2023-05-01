@@ -1,7 +1,10 @@
 from django.db import models
 from slugify import slugify
 from datetime import datetime
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.contrib.auth import get_user_model
+from .tasks import send_news
 
 User = get_user_model()
 
@@ -63,3 +66,14 @@ class NewsComment(models.Model):
 
     def __str__(self) -> str:
         return f'Комментарий от {self.user.username}'
+
+
+@receiver(post_save, sender=News)
+def send_order_confirmation_mail(sender: News, instance: News, created: bool, **kwargs):
+    if created:
+        recipients_list = [student.email for student in instance.university.students.all()]
+        send_news.delay(
+            recipient_list=recipients_list,
+            university_id=instance.university.id,
+            news_id=instance.slug
+        )

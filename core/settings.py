@@ -1,10 +1,12 @@
-from pathlib import Path
-from decouple import config
-from datetime import timedelta
 import os
+from datetime import timedelta
+from pathlib import Path
+
 from allauth.account.signals import user_signed_up
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_URL = config('BASE_URL')
 
 SECRET_KEY = config('SECRET_KEY')
 

@@ -1,15 +1,17 @@
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
-from .models import News, NewsRating, NewsComment
-from .serializers import NewsSerializer, NewsCommentSerializer, RatingSerializer
-from ..permissions import IsOwner
 from apps.uni_apps.university.models import University
+
+from ..permissions import IsOwner
+from .models import News, NewsComment
+from .serializers import (NewsCommentSerializer, NewsSerializer,
+                          RatingSerializer)
 
 
 class NewsViewSet(ModelViewSet):
@@ -19,7 +21,6 @@ class NewsViewSet(ModelViewSet):
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
             self.permission_classes = [IsOwner]
-            print(self.permission_classes)
         return super().get_permissions()
 
     def get_serializer_context(self):
@@ -62,7 +63,7 @@ class NewsViewSet(ModelViewSet):
             comment.delete()
             return Response({'message': 'красавчик нефор'})
 
-    @action(methods=['POST'], detail=True, url_path='news')
+    @action(methods=['POST'], detail=True, url_path='rate')
     def rate_news(self, request, pk=None) -> Response:
         news = self.get_object()
         serializer = RatingSerializer(data=request.data, context={
