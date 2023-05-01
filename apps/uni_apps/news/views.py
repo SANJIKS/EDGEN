@@ -1,38 +1,35 @@
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-
-from apps.uni_apps.university.models import University
 
 from ..permissions import IsOwner
+from ..university.models import University
 from .models import News, NewsComment
 from .serializers import (NewsCommentSerializer, NewsSerializer,
                           RatingSerializer)
 
 
-class NewsViewSet(ModelViewSet):
+class NewsList(mixins.ListModelMixin,
+               mixins.CreateModelMixin,
+               viewsets.GenericViewSet):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['title', 'description']
+    serializer_class = NewsSerializer
 
     def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-            self.permission_classes = [IsOwner]
-        return super().get_permissions()
+        if self.request.method == 'POST':
+            return [IsOwner()]
+        return [permissions.AllowAny()]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if getattr(self, 'swagger_fake_view', False):
             return context
 
-        try:
-            university = University.objects.get(pk=self.kwargs.get('uni_id'))
-        except University.DoesNotExist:
-            raise Http404
-
+        university = get_object_or_404(
+            University, id=self.kwargs.get('id'))
         context.update({
             'request': self.request,
             'university': university
@@ -40,31 +37,48 @@ class NewsViewSet(ModelViewSet):
         return context
 
     def get_queryset(self):
-        return News.objects.filter(university=self.kwargs.get('uni_id'))
+        return News.objects.filter(university=self.kwargs.get('id'))
+
+
+class NewsDetail(mixins.RetrieveModelMixin,
+                 mixins.UpdateModelMixin,
+                 mixins.DestroyModelMixin,
+                 viewsets.GenericViewSet):
+    queryset = News.objects.all()
+
+    def get_permissions(self):
+        if self.action in ('comment', 'rate'):
+            return [permissions.IsAuthenticated()]
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            return [IsOwner()]
+        return [permissions.AllowAny()]
 
     def get_serializer_class(self):
-        if self.action == 'comment':
+        if self.action == 'comment_create':
             return NewsCommentSerializer
+        elif self.action == 'rate':
+            return RatingSerializer
         return NewsSerializer
 
-    @action(methods=['POST', 'DELETE'], detail=True)
-    def comment(self, request, pk=None):
+    @action(methods=['POST'], detail=True, url_path='comment')
+    def comment_create(self, request, pk=None):
         news = self.get_object()
-        if request.method == 'POST':
-            serializer = NewsCommentSerializer(
-                data=request.data, context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save(user=request.user, news=news)
-            return Response(serializer.data)
-        if request.method == 'DELETE':
-            comment = get_object_or_404(NewsComment.objects.filter(id=pk))
-            if request.user != comment.user:
-                return Response({'error': 'ты че дурашечка'}, status=403)
-            comment.delete()
-            return Response({'message': 'красавчик нефор'})
+        serializer = self.get_serializer(
+            data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user, news=news)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(methods=['POST'], detail=True, url_path='rate')
-    def rate_news(self, request, pk=None) -> Response:
+    @action(['DELETE'], detail=True, url_path='comment/(?P<comment_pk>\d+)')
+    def comment_delete(self, request, pk=None, comment_pk=None):
+        comment = get_object_or_404(NewsComment.objects.filter(pk=comment_pk))
+        if request.user != comment.user:
+            return Response({'detail': 'You are not allowed to perform this action'}, status=status.HTTP_403_FORBIDDEN)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['POST'], detail=True)
+    def rate(self, request, pk=None) -> Response:
         news = self.get_object()
         serializer = RatingSerializer(data=request.data, context={
                                       'request': request, 'news': news})

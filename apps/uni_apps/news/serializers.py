@@ -10,21 +10,20 @@ from .models import News, NewsRating, NewsComment
 class NewsListSerializer(serializers.ListSerializer):
     def get_image_url(self, image):
         request = self.context['request']
-        ahaha = request.build_absolute_uri(image.url)
-        return ahaha
+        image_url = request.build_absolute_uri(image.url)
+        return image_url
 
     def to_representation(self, data):
         iterable = data.all() if isinstance(data, models.Manager) else data
         return [{
+            'slug': item.slug,
             'title': item.title,
             'university': item.university.name,
-            'image_url': self.get_image_url(item.image)
+            'image_url': self.get_image_url(item.image) if item.image else None,
         } for item in iterable]
 
 
 class NewsSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(max_length=None, use_url=True)
-
     class Meta:
         model = News
         fields = '__all__'

@@ -8,7 +8,7 @@ from ..university.models import University
 @shared_task
 def send_news(recipient_list, university_id, news_id):
     university = University.objects.get(id=university_id)
-    news_link = f'http://{settings.BASE_URL}/university/{university_id}/news/{news_id}/'
+    news_link = f'http://{settings.BASE_URL}/news/{news_id}/'
     subject = 'News from your university'
     message = f"""
     Hello dear student!,
