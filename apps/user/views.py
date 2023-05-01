@@ -14,7 +14,7 @@ from .models import Profile
 from .permissions import IsAuthorOrReadOnly
 from .serializers import ProfileSerializer, SubscriptionSerializer
 from .tasks import send_registration, send_reset_password, send_reset_username
-from rest_framework import generics, permissions, serializers
+from rest_framework import generics, permissions
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from .models import Subscription
@@ -29,7 +29,7 @@ def create_profile_for_new_user(sender, request, user, **kwargs):
         profile = Profile.objects.create(user=user)
 
 
-user_signed_up.connect(create_profile_for_new_user)
+# user_signed_up.connect(create_profile_for_new_user)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -125,36 +125,42 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
 
         return user.profile
 
-    @action(["get", "put", "patch", "delete"], detail=False)
+    @action(["put", "patch"], detail=False)
     def me(self, request, *args, **kwargs):
         if request.method == "PUT":
             return self.update(request, *args, **kwargs)
         elif request.method == "PATCH":
             return self.partial_update(request, *args, **kwargs)
 
-class SubscriptionCreateAPIView(generics.CreateAPIView):
+
+class SubscriptionViewSet(mixins.CreateModelMixin,
+                          mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = SubscriptionSerializer
 
-    def perform_create(self, serializer):
-        subscribed_to = get_object_or_404(User, id=self.kwargs['user_id'])
-        if subscribed_to == self.request.user:
-            raise serializers.ValidationError("You cannot subscribe to yourself")
-        serializer.save(subscriber=self.request.user, subscribed_to=subscribed_to)
+    def get_object(self):
+        subscribed_to = get_object_or_404(User, id=self.kwargs['id'])
+        return get_object_or_404(Subscription, subscriber=self.request.user, subscribed_to=subscribed_to)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if getattr(self, 'swagger_fake_view', False):
+            return context
+
+        context['subscribed_to'] = self.kwargs['id']
+        return context
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SubscriptionListAPIView(generics.ListAPIView):
+class SubscriptionListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = SubscriptionSerializer
 
     def get_queryset(self):
         return Subscription.objects.filter(subscriber=self.request.user)
-
-
-class SubscriptionDestroyAPIView(generics.DestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = SubscriptionSerializer
-
-    def get_object(self):
-        subscribed_to = get_object_or_404(User, id=self.kwargs['user_id'])
-        return get_object_or_404(Subscription, subscriber=self.request.user, subscribed_to=subscribed_to)
