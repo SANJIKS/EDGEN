@@ -27,9 +27,9 @@ class Article(models.Model):
     slug = models.SlugField(primary_key=True, max_length=150, blank=True)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    tag = models.ForeignKey(Tags, on_delete=models.CASCADE,
-                            related_name='articles', default='islamchik')
-    image = models.ImageField(upload_to='articles', default='articles/default.jpg')
+    tag = models.ForeignKey(Tags, on_delete=models.SET_NULL,
+                            null=True, related_name='articles')
+    image = models.ImageField(upload_to='articles', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(
