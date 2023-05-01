@@ -16,7 +16,8 @@ class LectureListSerialzer(serializers.ListSerializer):
         iterable = data.all() if isinstance(data, models.Manager) else data
 
         return [{
-            'name': item.name,
+            'id': item.id,
+            'title': item.title,
             'description': item.description,
         } for item in iterable]
 
@@ -32,11 +33,12 @@ class LectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecture
         fields = '__all__'
-        read_only_fields = ['module']
+        read_only_fields = ['subject', 'user']
         list_serializer_class = LectureListSerialzer
 
     def create(self, validated_data):
-        validated_data['module'] = self.context['module']
+        validated_data['subject'] = self.context['subject']
+        validated_data['user'] = self.context['request'].user
         lecture_files = validated_data.pop('lecture_files')
         lecture = Lecture.objects.create(**validated_data)
 
