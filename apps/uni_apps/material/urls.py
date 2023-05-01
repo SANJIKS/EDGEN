@@ -1,8 +1,9 @@
 from rest_framework.routers import DefaultRouter
-from .views import LectureViewSet
+from .views import LectureList, LectureDetail
 
 router = DefaultRouter()
-router.register(r'university/(?P<uni_id>\d+)/subject/(?P<sub_id>\d+)/lecture',
-                LectureViewSet, 'lecture')
+router.register(r'subject/(?P<id>\d+)/lecture',
+                LectureList, 'lecture')
+router.register('lecture', LectureDetail, 'lecture')
 
 urlpatterns = router.urls

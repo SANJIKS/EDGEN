@@ -1,19 +1,20 @@
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, mixins, permissions, viewsets, status
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import (filters, generics, mixins, permissions, status,
+                            viewsets)
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
-
-
-from .models import Article, Comment, Like, DisLike, Favorite, Tags
-from .serializers import ArticleSerializer, FavoriteSerializer, LikeSerializer, DisLikeSerializer, CommentSerializer, TagsSerializer
+from .models import Article, Comment, DisLike, Favorite, Like, Tags
 from .permissions import IsAuthor
+from .serializers import (ArticleSerializer, CommentSerializer,
+                          DisLikeSerializer, FavoriteSerializer,
+                          LikeSerializer, TagsSerializer)
 
 
 class ArticleViewSet(ModelViewSet):
@@ -22,7 +23,6 @@ class ArticleViewSet(ModelViewSet):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['title', 'description']
 
-
     def get_permissions(self):
         if self.request.method == 'POST':
             self.permission_classes = [IsAuthenticated]
@@ -30,12 +30,11 @@ class ArticleViewSet(ModelViewSet):
             self.permission_classes = [IsAuthor]
         return super().get_permissions()
 
-
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context.update({'request': self.request})
         return context
-    
+
     def get_serializer_class(self):
         if self.action == 'comment':
             return CommentSerializer
@@ -46,7 +45,7 @@ class ArticleViewSet(ModelViewSet):
         elif self.action == 'favorite':
             return FavoriteSerializer
         return super().get_serializer_class()
-    
+
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(60*60))
     def list(self, request, *args, **kwargs):
@@ -56,7 +55,8 @@ class ArticleViewSet(ModelViewSet):
     def comment(self, request, pk=None):
         article = self.get_object()
         if request.method == 'POST':
-            serializer = CommentSerializer(data=request.data, context={'request': request})
+            serializer = CommentSerializer(
+                data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save(user=request.user, article=article)
             return Response(serializer.data)
@@ -66,7 +66,6 @@ class ArticleViewSet(ModelViewSet):
                 return Response({'error': 'ты че дурашечка'})
             comment.delete()
             return Response({'message': 'красавчик нефор'})
-        
 
     @action(methods=['POST'], detail=True)
     def like(self, request, pk=None):
@@ -80,15 +79,17 @@ class ArticleViewSet(ModelViewSet):
             Like.objects.create(user=request.user, article=article)
             liked = True
             article.rating += 1
-            dislike = DisLike.objects.filter(user=request.user, article=article)
+            dislike = DisLike.objects.filter(
+                user=request.user, article=article)
             if dislike.exists():
                 dislike.delete()
                 article.rating += 1
 
+        article.save()
         likes_count = Like.objects.filter(article=article).count()
         response_data = {'liked': liked, 'likes_count': likes_count}
         return Response(response_data)
-    
+
     @action(methods=['POST'], detail=True)
     def dislike(self, request, pk=None):
         article = self.get_object()
@@ -106,8 +107,7 @@ class ArticleViewSet(ModelViewSet):
                 like.delete()
                 article.rating -= 1
         return Response({'DisLiked': disliked})
-    
-    
+
     @action(methods=['POST'], detail=True)
     def favorite(self, request, pk=None):
         article = self.get_object()
@@ -120,7 +120,7 @@ class ArticleViewSet(ModelViewSet):
             favor = True
 
         return Response({'In Favorite': favor})
-    
+
 
 class FavoriteListAPIView(generics.ListAPIView):
     serializer_class = FavoriteSerializer
@@ -139,7 +139,12 @@ class RecommendationsListAPIView(generics.ListAPIView):
     def get_queryset(self):
         return Article.objects.order_by('-rating')[:10]
 
-class TagsCreateReadDeleteView(mixins.CreateModelMixin, mixins.DestroyModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+
+class TagsCreateReadDeleteView(mixins.CreateModelMixin,
+                               mixins.DestroyModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.RetrieveModelMixin,
+                               viewsets.GenericViewSet):
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
 
@@ -150,21 +155,3 @@ class TagsCreateReadDeleteView(mixins.CreateModelMixin, mixins.DestroyModelMixin
         elif method in ['POST', 'DELETE']:
             self.permission_classes = [permissions.IsAdminUser]
         return super().get_permissions()
-    
-
-
-# class CommentViewSet(ModelViewSet):
-#     queryset = Comment.objects.all()
-#     serializer_class = CommentSerializer
-
-#     def get_permissions(self):
-#         if self.action == 'create':
-#             self.permission_classes = [IsAuthenticated]
-#         elif self.action in ['update', 'destroy']:
-#             self.permission_classes = [IsAuthor]
-#         return super().get_permissions()
-    
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context.update({'request': self.request})
-#         return context

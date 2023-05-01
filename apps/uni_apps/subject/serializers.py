@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Subject
+from .models import Subject, Skill
 from ..material.serializers import LectureSerializer
 
 
@@ -17,3 +17,9 @@ class SubjectSerializer(serializers.ModelSerializer):
         repr_ = super().to_representation(instance)
         repr_['lectures'] = LectureSerializer(instance.lectures.all(), many=True).data
         return repr_
+
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        exclude = ['slug']

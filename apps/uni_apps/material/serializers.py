@@ -29,6 +29,7 @@ class LectureSerializer(serializers.ModelSerializer):
         required=False
     )
     user = serializers.ReadOnlyField(source='user.username')
+    subject = serializers.ReadOnlyField(source='subject.title')
 
     class Meta:
         model = Lecture
@@ -39,7 +40,7 @@ class LectureSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['subject'] = self.context['subject']
         validated_data['user'] = self.context['request'].user
-        lecture_files = validated_data.pop('lecture_files')
+        lecture_files = validated_data.pop('lecture_files', None)
         lecture = Lecture.objects.create(**validated_data)
 
         if lecture_files:
@@ -51,9 +52,8 @@ class LectureSerializer(serializers.ModelSerializer):
         return lecture
 
     def to_representation(self, instance):
-        representaion = super().to_representation(instance)
+        repr_ = super().to_representation(instance)
 
-        representaion['files'] = LectureFileSerialzer(
+        repr_['files'] = LectureFileSerialzer(
             instance.files.all(), many=True).data
-
-        return representaion
+        return repr_

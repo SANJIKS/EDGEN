@@ -1,8 +1,8 @@
 from rest_framework.routers import DefaultRouter
-from django.urls import path, include
-from .views import NewsViewSet
+from .views import NewsList, NewsDetail
 
 router = DefaultRouter()
-router.register(r'university/(?P<uni_id>\d+)/news', NewsViewSet, 'news')
+router.register(r'university/(?P<id>\d+)/news', NewsList, 'news')
+router.register('news', NewsDetail, 'news')
 
 urlpatterns = router.urls

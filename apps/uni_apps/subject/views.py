@@ -1,28 +1,57 @@
-from rest_framework import permissions, viewsets
-
-from apps.uni_apps.university.models import University
+from django.shortcuts import get_object_or_404
+from rest_framework import mixins, permissions, viewsets
 
 from ..permissions import IsOwner, IsStudentOrOwner
-from .models import Subject
-from .serializers import SubjectSerializer
+from ..university.models import University
+from .models import Skill,  Subject
+from .serializers import SkillSerializer, SubjectSerializer
 
 
-class SubjectViewSet(viewsets.ModelViewSet):
+class SubjectList(mixins.CreateModelMixin,
+                  mixins.ListModelMixin,
+                  viewsets.GenericViewSet):
     serializer_class = SubjectSerializer
 
     def get_queryset(self):
-        uni_id = self.kwargs.get('uni_id')
-        return Subject.objects.filter(university=uni_id)
+        id = self.kwargs.get('id')
+        return Subject.objects.filter(university=id)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if getattr(self, 'swagger_fake_view', False):
             return context
-        uni_id = self.kwargs.get('uni_id')
-        context['university'] = University.objects.get(pk=uni_id)
+        context['university'] = get_object_or_404(
+            University, id=self.kwargs.get('id'))
         return context
 
     def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+        if self.request.method == 'POST':
             return [IsOwner()]
         return [IsStudentOrOwner()]
+
+
+class SubjectDetail(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    viewsets.GenericViewSet):
+    serializer_class = SubjectSerializer
+    queryset = Subject.objects.all()
+
+    def get_permissions(self):
+        if self.request.method in ('PUT', 'PATCH', 'DELETE'):
+            return [IsOwner()]
+        return [IsStudentOrOwner()]
+
+
+class SkillReadCreateDeleteView(mixins.CreateModelMixin,
+                                mixins.DestroyModelMixin,
+                                mixins.ListModelMixin,
+                                viewsets.GenericViewSet):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer
+
+    def get_permissions(self):
+        method = self.request.method
+        if method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
