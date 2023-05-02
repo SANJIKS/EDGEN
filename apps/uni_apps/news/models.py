@@ -15,8 +15,9 @@ class News(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='news', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)    
-    university = models.ForeignKey('university.University', on_delete=models.CASCADE, related_name='news')
+    updated_at = models.DateTimeField(auto_now=True)
+    university = models.ForeignKey(
+        'university.University', on_delete=models.CASCADE, related_name='news')
 
     class Meta:
         verbose_name = 'Новость'
@@ -25,12 +26,13 @@ class News(models.Model):
 
     def __str__(self) -> str:
         return self.title
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title) + datetime.now().strftime('_%d_%M_%H')
+            self.slug = slugify(self.title) + \
+                datetime.now().strftime('_%d_%M_%H')
         return super().save(*args, **kwargs)
-    
+
 
 class NewsRating(models.Model):
     RATES = (
@@ -41,8 +43,10 @@ class NewsRating(models.Model):
         (5, '5'),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news_rating')
-    news = models.ForeignKey(News, on_delete=models.CASCADE, related_name='rating')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='news_rating')
+    news = models.ForeignKey(
+        News, on_delete=models.CASCADE, related_name='rating')
     rate = models.PositiveSmallIntegerField(choices=RATES)
 
     def __str__(self):
@@ -55,10 +59,12 @@ class NewsRating(models.Model):
 
 
 class NewsComment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news_comments')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='news_comments')
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    news = models.ForeignKey(News, on_delete=models.CASCADE, related_name='news_comments')
+    news = models.ForeignKey(
+        News, on_delete=models.CASCADE, related_name='news_comments')
 
     class Meta:
         verbose_name = 'Комментарий новости'
@@ -71,7 +77,8 @@ class NewsComment(models.Model):
 @receiver(post_save, sender=News)
 def send_order_confirmation_mail(sender: News, instance: News, created: bool, **kwargs):
     if created:
-        recipients_list = [student.email for student in instance.university.students.all()]
+        recipients_list = [
+            student.email for student in instance.university.students.all()]
         send_news.delay(
             recipient_list=recipients_list,
             university_id=instance.university.id,

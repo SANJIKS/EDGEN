@@ -1,3 +1,4 @@
+from typing import Collection, Optional
 from django.db import models
 from django.contrib.auth import get_user_model
 from slugify import slugify
