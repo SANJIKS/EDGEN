@@ -32,7 +32,7 @@ class ArticleListSerializer(serializers.ListSerializer):
         return [{
             'title': item.title,
             'user': item.user.username,
-            'image_url': self.get_image_url(item.image)
+            'image_url': self.get_image_url(item.image) if item.image else None,
         } for item in iterable]
 
 

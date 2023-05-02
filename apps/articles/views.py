@@ -1,3 +1,7 @@
+from itertools import chain
+from operator import attrgetter
+import logging
+
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -15,6 +19,9 @@ from .permissions import IsAuthor
 from .serializers import (ArticleSerializer, CommentSerializer,
                           DisLikeSerializer, FavoriteSerializer,
                           LikeSerializer, TagsSerializer)
+
+
+logger = logging.getLogger('django')
 
 
 class ArticleViewSet(ModelViewSet):
@@ -137,7 +144,16 @@ class RecommendationsListAPIView(generics.ListAPIView):
     serializer_class = ArticleSerializer
 
     def get_queryset(self):
-        return Article.objects.order_by('-rating')[:10]
+        user = self.request.user
+        if user.is_anonymous:
+            queryset = Article.objects.order_by('-rating')[:10]
+        subs = getattr(user, 'subscriptions', None)
+        if subs:
+            queryset = Article.objects.order_by('-rating')[:subs.count()]
+            sub_articles = [sub.subscribed_to.articles.all()
+                            for sub in user.subscriptions.all()]
+            queryset = list(chain(queryset, sub_articles))
+        return queryset
 
 
 class TagsCreateReadDeleteView(mixins.CreateModelMixin,
