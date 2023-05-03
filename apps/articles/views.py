@@ -1,3 +1,4 @@
+from itertools import chain
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -137,7 +138,19 @@ class RecommendationsListAPIView(generics.ListAPIView):
     serializer_class = ArticleSerializer
 
     def get_queryset(self):
-        return Article.objects.order_by('-rating')[:10]
+        user = self.request.user
+        if user.is_anonymous:
+            queryset = Article.objects.order_by('-rating')[:10]
+        else:   
+            subs = user.subscriptions.all()
+            if subs:
+                subs = user.subscriptions.all()
+                subscribed_users = [sub.subscribed_to for sub in subs]
+                queryset = Article.objects.filter(user__in=subscribed_users).order_by('-rating')
+            else:
+                queryset = Article.objects.order_by('-rating')[:10]
+        return queryset
+    
 
 
 class TagsCreateReadDeleteView(mixins.CreateModelMixin,
