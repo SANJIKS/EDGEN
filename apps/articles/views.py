@@ -150,8 +150,23 @@ class RecommendationsListAPIView(generics.ListAPIView):
             else:
                 queryset = Article.objects.order_by('-rating')[:10]
         return queryset
-    
 
+
+class TagLikeRecs(generics.ListAPIView):
+    serializer_class = ArticleSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        liked_posts = user.likes.all()
+        print([art.article.tag for art in liked_posts])
+        tags = set()
+        for post in liked_posts:
+            print(post.article.tag)
+            tags.add(post.article.tag)
+        print(tags)
+
+        queryset = Article.objects.filter(tag__in=tags).order_by('-rating')
+        return queryset
 
 class TagsCreateReadDeleteView(mixins.CreateModelMixin,
                                mixins.DestroyModelMixin,
