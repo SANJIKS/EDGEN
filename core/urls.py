@@ -30,6 +30,7 @@ urlpatterns = [
     path('', include('apps.uni_apps.news.urls')),
     path('', include('apps.uni_apps.subject.urls')),
     path('', include('apps.uni_apps.material.urls')),
+    path('', include('apps.uni_apps.quiz.urls')),
 ]
 
 if settings.DEBUG:

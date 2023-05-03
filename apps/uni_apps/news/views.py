@@ -49,7 +49,7 @@ class NewsDetail(mixins.RetrieveModelMixin,
     def get_permissions(self):
         if self.action in ('comment', 'rate'):
             return [permissions.IsAuthenticated()]
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+        elif self.request.method in ['PUT', 'PATCH', 'DELETE']:
             return [IsOwner()]
         return [permissions.AllowAny()]
 

@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, viewsets
 
+from ..permissions import IsOwnerOfSubject, IsStudentOrOwnerOfSubject
 from ..subject.models import Subject
 from .models import Lecture
-from .permissions import IsOwner, IsStudentOrOwner
 from .serializers import LectureSerializer
 
 
@@ -27,8 +27,8 @@ class LectureList(mixins.ListModelMixin,
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [IsOwner()]
-        return [IsStudentOrOwner()]
+            return [IsOwnerOfSubject()]
+        return [IsStudentOrOwnerOfSubject()]
 
 
 class LectureDetail(mixins.RetrieveModelMixin,
@@ -40,5 +40,5 @@ class LectureDetail(mixins.RetrieveModelMixin,
 
     def get_permissions(self):
         if self.request.method in ('PUT', 'PATCH', 'DELETE'):
-            return [IsOwner()]
-        return [IsStudentOrOwner()]
+            return [IsOwnerOfSubject()]
+        return [IsStudentOrOwnerOfSubject()]
