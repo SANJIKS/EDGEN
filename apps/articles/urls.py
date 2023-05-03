@@ -8,6 +8,6 @@ router.register('tag', TagsCreateReadDeleteView, 'tags')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('article/favorites/', FavoriteListAPIView.as_view(), name='favorites'),
-    path('article/recommendations/', RecommendationsListAPIView.as_view(), name='top-articles')
+    path('auth/user/me/favorites/', FavoriteListAPIView.as_view(), name='favorites'),
+    path('top-posts/', RecommendationsListAPIView.as_view(), name='top-articles')
 ]

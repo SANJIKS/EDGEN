@@ -34,6 +34,7 @@ class ArticleListSerializer(serializers.ListSerializer):
             'title': item.title,
             'user': item.user.username,
             'image_url': self.get_image_url(item.image) if item.image else None,
+            'rating': item.rating
         } for item in iterable]
 
 
@@ -91,3 +92,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'user', 'article', 'text', 'created_at')
         read_only_fields = ['article']
+
+
+
+#TODO: исправить ошибку с избранными(slug), и с рекомендациями
