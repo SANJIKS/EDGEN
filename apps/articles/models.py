@@ -72,7 +72,6 @@ class Comment(models.Model):
         User, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    # updated_at = models.DateTimeField(auto_now=True)
     article = models.ForeignKey(
         Article, on_delete=models.CASCADE, related_name='comments')
 
