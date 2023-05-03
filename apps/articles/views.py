@@ -141,12 +141,13 @@ class RecommendationsListAPIView(generics.ListAPIView):
         user = self.request.user
         if user.is_anonymous:
             queryset = Article.objects.order_by('-rating')[:10]
-        else:   
+        else:
             subs = user.subscriptions.all()
             if subs:
                 subs = user.subscriptions.all()
                 subscribed_users = [sub.subscribed_to for sub in subs]
-                queryset = Article.objects.filter(user__in=subscribed_users).order_by('-rating')
+                queryset = Article.objects.filter(
+                    user__in=subscribed_users).order_by('-rating')
             else:
                 queryset = Article.objects.order_by('-rating')[:10]
         return queryset
@@ -154,19 +155,21 @@ class RecommendationsListAPIView(generics.ListAPIView):
 
 class TagLikeRecs(generics.ListAPIView):
     serializer_class = ArticleSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        liked_posts = user.likes.all()
-        print([art.article.tag for art in liked_posts])
+        if user.is_anonymous:
+            return []
+
+        liked_posts = [like.article for like in user.likes.all()]
         tags = set()
         for post in liked_posts:
-            print(post.article.tag)
-            tags.add(post.article.tag)
-        print(tags)
+            tags.add(post.tag)
 
         queryset = Article.objects.filter(tag__in=tags).order_by('-rating')
         return queryset
+
 
 class TagsCreateReadDeleteView(mixins.CreateModelMixin,
                                mixins.DestroyModelMixin,
