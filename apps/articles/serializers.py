@@ -92,7 +92,8 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'user', 'article', 'text', 'created_at')
         read_only_fields = ['article']
-
-
-
-#TODO: исправить ошибку с избранными(slug), и с рекомендациями
+    
+    def to_representation(self, instance):
+        repr_ = super().to_representation(instance)
+        repr_['user'] = instance.user.username
+        return repr_
