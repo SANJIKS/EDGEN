@@ -25,20 +25,13 @@ class GetResultSerializer(serializers.Serializer):
         question_count = self.get_question_count(quiz)
         attrs['result'] = counter / question_count * 100
         if attrs['result'] >= 60:
-            student.skills = quiz.subject.skills.all()
-            student.save()
+            for skill in quiz.subject.skills.all():
+                print(skill)
+                if skill not in student.profile.skills.all():
+                    student.profile.skills.add(skill)
+            student.profile.save()
             attrs['passed'] = True
 
-        return attrs
-
-
-class QuizSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Quiz
-        exclude = ('subject',)
-
-    def validate(self, attrs):
-        attrs['subject'] = self.context['subject']
         return attrs
 
 
@@ -81,3 +74,18 @@ class QuestionSerializer(serializers.ModelSerializer):
         representation['answers'] = AnswerSerializer(
             instance.answers.all(), many=True).data
         return representation
+
+
+class QuizSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        exclude = ('subject',)
+
+    def validate(self, attrs):
+        attrs['subject'] = self.context['subject']
+        return attrs
+    
+    def to_representation(self, instance):
+        repr_ = super().to_representation(instance)
+        repr_['questions'] = QuestionSerializer(instance.questions.all(), many=True).data
+        return repr_

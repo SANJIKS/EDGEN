@@ -52,12 +52,12 @@ class QuizDetail(mixins.RetrieveModelMixin,
             return context
 
         if self.action == 'result':
-            quiz = get_object_or_404(Quiz, id=self.kwargs.get('id'))
+            quiz = get_object_or_404(Quiz, pk=self.kwargs.get('pk'))
             context.update({'quiz': quiz})
         return context
 
     def get_permissions(self):
-        if self.action == 'retrieve':
+        if self.action in ('retrieve', 'result'):
             return [IsStudentOrOwnerOfSubject()]
         return [IsOwnerOfSubject()]
 

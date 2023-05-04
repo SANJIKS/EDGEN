@@ -1,18 +1,21 @@
-from djoser.serializers import UserSerializer
-from django.db import models
-from rest_framework import serializers
-from .models import Profile
-from rest_framework import serializers
-from .models import Subscription
-from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Subscription
+from django.db import models
+from djoser.serializers import UserSerializer
+from rest_framework import serializers
+
+from ..uni_apps.subject.serializers import SkillSerializer
+from .models import Profile, Subscription
 
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         exclude = ['user']
+
+    def to_representation(self, instance):
+        repr_ = super().to_representation(instance)
+        repr_['skills'] = SkillSerializer(instance.skills.all(), many=True).data
+        return repr_
 
 
 class CustomUserListSerializer(serializers.ListSerializer):
