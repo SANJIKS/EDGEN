@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.uni_apps.news',
     'apps.uni_apps.subject',
     'apps.uni_apps.material',
+    'apps.uni_apps.quiz',
 
 ]
 

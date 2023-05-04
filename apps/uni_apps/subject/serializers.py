@@ -22,4 +22,5 @@ class SubjectSerializer(serializers.ModelSerializer):
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
-        exclude = ['slug']
+        fields = '__all__'
+        read_only_fields = ['slug']
