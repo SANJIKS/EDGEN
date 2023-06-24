@@ -3,11 +3,12 @@ from datetime import timedelta
 from pathlib import Path
 
 from allauth.account.signals import user_signed_up
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_URL = os.getenv('BASE_URL')
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG')
 
