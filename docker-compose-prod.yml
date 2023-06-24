@@ -16,6 +16,8 @@ services:
       - static_volume:/app/static
       - media_volume:/app/media
       - db:/app/db
+    ports:
+      - "8000:8000"
     command: gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock core.wsgi:application
 
   redis:
