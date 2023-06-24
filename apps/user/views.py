@@ -1,4 +1,3 @@
-from allauth.account.signals import user_signed_up
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -18,15 +17,6 @@ from .serializers import ProfileSerializer, SubscriptionSerializer
 from .tasks import send_registration, send_reset_password, send_reset_username
 
 User = get_user_model()
-
-
-# @receiver(user_signed_up)
-# def create_profile_for_new_user(sender, request, user, **kwargs):
-#     if user.socialaccount_set.filter(provider='google').exists() or user.socialaccount_set.filter(provider='vk').exists():
-#         profile = Profile.objects.create(user=user)
-
-
-# user_signed_up.connect(create_profile_for_new_user)
 
 
 class CustomUserViewSet(UserViewSet):

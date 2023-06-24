@@ -3,16 +3,15 @@ from datetime import timedelta
 from pathlib import Path
 
 from allauth.account.signals import user_signed_up
-from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-BASE_URL = config('BASE_URL')
+BASE_URL = os.getenv('BASE_URL')
 
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = config('DEBUG', cast=bool)
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split()
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='*').split()
 
 
 # Application definition
@@ -35,7 +34,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'drf_yasg',
-    'django_filters',
+    # 'django_filters',
     'djoser',
     'corsheaders',
 
@@ -92,12 +91,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': config('DB_ENGINE'),
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     },
 }
 
@@ -190,10 +189,10 @@ DJOSER = {
 # Email
 
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = config('EMAIL_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
-EMAIL_PORT = config('EMAIL_PORT')
-EMAIL_USE_TLS = config('USE_TLS', cast=bool)
+EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = os.getenv('USE_TLS')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
@@ -205,7 +204,6 @@ LOGIN_REDIRECT_URL = '/'
 
 ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
-
 
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -249,7 +247,6 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 
-
 # CORS headings
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -264,8 +261,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 CELERY_TIMEZONE = "Asia/Bishkek"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
 
 # Swagger Configuration Options

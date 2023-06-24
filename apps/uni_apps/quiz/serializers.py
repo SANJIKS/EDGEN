@@ -26,7 +26,6 @@ class GetResultSerializer(serializers.Serializer):
         attrs['result'] = counter / question_count * 100
         if attrs['result'] >= 60:
             for skill in quiz.subject.skills.all():
-                print(skill)
                 if skill not in student.profile.skills.all():
                     student.profile.skills.add(skill)
             student.profile.save()

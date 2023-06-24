@@ -1,0 +1,51 @@
+version: '3.3'
+
+services:
+
+  db:
+    image: postgres:14.7
+    env_file:
+      - .env
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+      - db:/app/db
+      - .:/app
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:alpine
+    expose:
+      - 6379
+
+  celery:
+    build:
+      context: .
+    env_file:
+      - .env
+    command: >
+      sh -c 'celery -A core worker -l info'
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - api
+
+volumes:
+  static_volume:
+  media_volume:
+  db:
