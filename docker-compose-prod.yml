@@ -1,10 +1,8 @@
 version: '3.3'
 
 services:
-
   db:
     image: postgres:14.7
-    container_name: db
     env_file:
       - .env
     volumes:
@@ -18,28 +16,10 @@ services:
       - static_volume:/app/static
       - media_volume:/app/media
       - db:/app/db
-    command: >
-      sh -c "python manage.py collectstatic --noinput &&
-             python manage.py migrate &&
-             gunicorn \
-              --access-logfile - \
-              --workers 3 \
-              --bind unix:/run/gunicorn.sock \
-              myproject.wsgi:application"
-    env_file:
-      - .env
-    ports:
-      - 8000:8000
-    expose:
-      - 8000
-    links:
-      - redis
-    depends_on:
-      - redis
+    command: gunicorn \ --access-logfile - \ --workers 3 \ --bind unix:/run/gunicorn.sock \ myproject.wsgi:application
 
   redis:
     image: redis:alpine
-    hostname: redis
     expose:
       - 6379
 
@@ -52,8 +32,6 @@ services:
       sh -c 'celery -A core worker -l info'
     volumes:
       - .:/app
-    links:
-      - redis
     depends_on:
       - redis
       - api
