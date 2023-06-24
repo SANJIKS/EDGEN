@@ -16,7 +16,7 @@ services:
       - static_volume:/app/static
       - media_volume:/app/media
       - db:/app/db
-    command: gunicorn \ --access-logfile - \ --workers 3 \ --bind unix:/run/gunicorn.sock \ core.wsgi:application
+    command: gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock core.wsgi:application
 
   redis:
     image: redis:alpine
