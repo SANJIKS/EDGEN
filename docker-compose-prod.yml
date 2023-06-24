@@ -18,7 +18,7 @@ services:
       - db:/app/db
     ports:
       - "8000:8000"
-    command: gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock core.wsgi:application
+    command: gunicorn --access-logfile - --workers 3 --bind 0.0.0.0:8000 core.wsgi:application
 
   redis:
     image: redis:alpine
