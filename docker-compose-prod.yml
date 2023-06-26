@@ -42,6 +42,8 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./nginx
+    .env_file:
+      - .env
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
